@@ -23,7 +23,7 @@ inicio
                     k = 0;
                     enquanto (k < j) faca {
                         valor = (valor * (i - k));
-                        valor = (valor / 0);
+                        valor = (valor / (k+1));
                         k = k + 1;
                     }
                 }

@@ -59,16 +59,28 @@ class FimlySemanticAnalyzer(fimlyVisitor):
     #  verificação de divisão por zero, verifica se ela foi declarada.
     def visitTermo(self, ctx: fimlyParser.TermoContext):
         fatores = ctx.fator()
-        operadores = getattr(ctx, 'op', [])
+
+        # Obtem os tokens dos operadores MULTIPLICA e DIVISAO
+        multipl = ctx.MULTIPLICA()
+        divis = ctx.DIVISAO()
+
+        # Reúne todos os operadores com suas posições para manter ordem correta
+        tokens_op = []
+        tokens_op += [(tok.symbol.tokenIndex, '*') for tok in multipl]
+        tokens_op += [(tok.symbol.tokenIndex, '/') for tok in divis]
+        tokens_op.sort(key=lambda x: x[0])
+        operadores = [op for _, op in tokens_op]
 
         for i in range(1, len(fatores)):
-            operador = operadores[i - 1].getText() if operadores else None
+            operador = operadores[i - 1] if operadores else None
             fator_ctx = fatores[i]
+            # Aqui fazemos a verificação de divisão por zero
             if operador == '/':
                 if fator_ctx.INTEIRO() and fator_ctx.getText() == '0':
                     self.erro_semantico(ctx, "Divisão por zero detectada.")
             self.visit(fator_ctx)
 
+        #  Verificação de tipo em operações matemáticas, ele descobre o tipo de cada termo.
         tipos = [self.visit(f) for f in fatores]
         return self.tipo_comum(tipos)
 
@@ -99,7 +111,6 @@ class FimlySemanticAnalyzer(fimlyVisitor):
                 self.erro_semantico(ctx, f"Operações lógicas só funcionam com valores booleanos, mas recebeu '{tipo}'")
         return 'bool'
     
-
     # Auxiliares
     #Garante que string não se misture com números, permite que int e float interajam
     def tipos_compatíveis(self, tipo1, tipo2):
@@ -108,7 +119,6 @@ class FimlySemanticAnalyzer(fimlyVisitor):
         if tipo1 in ('int', 'float') and tipo2 in ('int', 'float'):
             return True
         return False
-
 
     #Determina qual tipo domina numa operação.
     def tipo_comum(self, tipos):

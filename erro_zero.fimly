@@ -1,10 +1,6 @@
 a: int;
-b: int;
-c: float;
 
 inicio
-a = 10;
-b = 0;
-c = a / b;
-escreva(c);
+a = 10 / 0;  // divisão por zero deve dar erro
+
 fim
