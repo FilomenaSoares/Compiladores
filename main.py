@@ -1,12 +1,12 @@
 from antlr4 import *
 from src.fimlyLexer import fimlyLexer
 from src.fimlyParser import fimlyParser
-from src.parser import parse_file 
+from src.parser import parse_file
 from src.CustomErrorListener import CustomErrorListener
 from src.scanner import scan_file
-from src.ast_visualizer import ASTVisualizer
-from src.fimlySemanticAnalyzer import FimlySemanticAnalyzer  
+from src.fimlySemanticAnalyzer import FimlySemanticAnalyzer
 from src.gerar_imagem import gerar_arvore_e_imagem
+from src.tac_generator import TACGenerator
 
 def mostrar_arquivo(nome_arquivo):
     try:
@@ -45,7 +45,7 @@ def main():
         print("Erros sintáticos encontrados. Encerrando.")
         return
 
-    # Análise Semântica 
+    # Análise Semântica
     analisador = FimlySemanticAnalyzer()
     try:
         analisador.visit(arvore)
@@ -54,13 +54,17 @@ def main():
         print("Análise semântica encerrada devido a erro.")
         return
 
-    # Geração da AST (árvore abstrata)
-    raiz = parse_file(arquivo_fimly)  # Verifique se parse_file retorna a AST
-    if raiz is None:
-        return
-
-    # Visualização da AST
+    # Geração da AST (caso queira a imagem)
     gerar_arvore_e_imagem(arquivo_fimly, pasta_destino="imagens")
+
+    # Geração de código intermediário (TAC)
+    gerador = TACGenerator()
+    gerador.visit(arvore)
+
+    # Exibir as instruções TAC geradas
+    print("\n=== Código Intermediário (TAC) ===")
+    for instrucao in gerador.instructions:
+        print(instrucao)
 
 if __name__ == "__main__":
     main()
