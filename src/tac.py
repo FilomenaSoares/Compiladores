@@ -1,23 +1,47 @@
+# tac.py
 from abc import ABC, abstractmethod
 
 # Classe para representar os operandos das instruções TAC
 class TACOperand:
-    def __init__(self, value: str):
+    def __init__(self, value):
         self.value = value
 
     def __repr__(self):
-        return self.value
+        return str(self.value)
 
 # Classe para representar uma instrução TAC
 class TACInstruction:
-    def __init__(self, opcode: str, destino: TACOperand, *argumentos: TACOperand):
+    def __init__(self, opcode: str, *args):
         self.opcode = opcode
-        self.destino = destino
-        self.argumentos = argumentos
+        self.args = args
 
     def __repr__(self):
-        args = ', '.join(map(str, self.argumentos))
-        return f"{self.destino} = {self.opcode} {args}"
+        # Formatação inteligente baseada no opcode
+        op = self.opcode
+        args = self.args
+
+        if op in ['+', '-', '*', '/']:
+            # Ex: _t0 = _t1 + _t2
+            return f"{args[0]} = {args[1]} {op} {args[2]}"
+        
+        if op == 'ASSIGN':
+            # Ex: x = _t0
+            return f"{args[0]} = {args[1]}"
+
+        if op == 'GOTO':
+            # Ex: GOTO L1
+            return f"GOTO {args[0]}"
+
+        if op == 'IF_FALSE_GOTO':
+            # Ex: IF_FALSE _t0 GOTO L2
+            return f"IF_FALSE {args[0]} GOTO {args[1]}"
+        
+        if op == 'LABEL':
+            # Ex: L3:
+            return f"{args[0]}:"
+        
+        # Caso padrão (pode ser usado para print, call, etc.)
+        return f"{op} " + ", ".join(map(str, args))
 
 # Interface Visitor
 class Visitor(ABC):
@@ -29,51 +53,13 @@ class Visitor(ABC):
 class GeradorDeCodigoIntermediario(Visitor):
     def __init__(self):
         self.temp_counter = 0
+        self.label_counter = 0
         self.instructions = []
 
     def new_temp(self):
         self.temp_counter += 1
         return TACOperand(f"_t{self.temp_counter}")
-
-class Expressao:
-    pass
-
-class ExpressaoBinaria(Expressao):
-    def __init__(self, esquerda, operador, direita):
-        self.esquerda = esquerda
-        self.operador = operador
-        self.direita = direita
-
-class ExpressaoUnaria(Expressao):
-    def __init__(self, operador, expressao):
-        self.operador = operador
-        self.expressao = expressao
-
-class Identificador(Expressao):
-    def __init__(self, nome):
-        self.nome = nome
-
-    def visit(self, node):
-        if isinstance(node, ExpressaoBinaria):
-            return self.visit_binaria(node)
-        elif isinstance(node, ExpressaoUnaria):
-            return self.visit_unaria(node)
-        elif isinstance(node, Identificador):
-            return self.visit_identificador(node)
-        # Adicionar outros tipos conforme necessário
-
-    def visit_binaria(self, node):
-        left = self.visit(node.esquerda)
-        right = self.visit(node.direita)
-        temp = self.new_temp()
-        self.instructions.append(TACInstruction(node.operador, temp, left, right))
-        return temp
-
-    def visit_unaria(self, node):
-        expr = self.visit(node.expressao)
-        temp = self.new_temp()
-        self.instructions.append(TACInstruction(node.operador, temp, expr))
-        return temp
-
-    def visit_identificador(self, node):
-        return TACOperand(node.nome)
+    
+    def new_label(self):
+        self.label_counter += 1
+        return TACOperand(f"L{self.label_counter}")
