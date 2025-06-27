@@ -1,6 +1,6 @@
 a: int;
 
 inicio
-a = 10 / 0;  // divisão por zero deve dar erro
+a = 10 / 0; 
 
 fim

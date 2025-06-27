@@ -1,4 +1,3 @@
-# tac.py
 from abc import ABC, abstractmethod
 
 # Classe para representar os operandos das instruções TAC
@@ -16,31 +15,25 @@ class TACInstruction:
         self.args = args
 
     def __repr__(self):
-        # Formatação inteligente baseada no opcode
         op = self.opcode
         args = self.args
 
-        if op in ['+', '-', '*', '/']:
-            # Ex: _t0 = _t1 + _t2
+        if op in ['+', '-', '*', '/', '<', '<=', '>', '>=', '==', '!=']:
             return f"{args[0]} = {args[1]} {op} {args[2]}"
-        
+
         if op == 'ASSIGN':
-            # Ex: x = _t0
             return f"{args[0]} = {args[1]}"
 
         if op == 'GOTO':
-            # Ex: GOTO L1
             return f"GOTO {args[0]}"
 
         if op == 'IF_FALSE_GOTO':
-            # Ex: IF_FALSE _t0 GOTO L2
             return f"IF_FALSE {args[0]} GOTO {args[1]}"
-        
+
         if op == 'LABEL':
-            # Ex: L3:
             return f"{args[0]}:"
-        
-        # Caso padrão (pode ser usado para print, call, etc.)
+
+        # Padrão para outras instruções como 'CALL', 'PRINT', etc.
         return f"{op} " + ", ".join(map(str, args))
 
 # Interface Visitor
@@ -49,7 +42,7 @@ class Visitor(ABC):
     def visit(self, node):
         pass
 
-# Classe que implementa o Visitor para geração de código intermediário
+# Gerador de código intermediário (Three Address Code)
 class GeradorDeCodigoIntermediario(Visitor):
     def __init__(self):
         self.temp_counter = 0
@@ -62,4 +55,4 @@ class GeradorDeCodigoIntermediario(Visitor):
     
     def new_label(self):
         self.label_counter += 1
-        return TACOperand(f"L{self.label_counter}")
+        return f"L{self.label_counter}"
