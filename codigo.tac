@@ -1,9 +1,9 @@
 DECL valor, int
 DECL a, int
 DECL b, int
-PRINT "Digite um para a valor:"
+PRINT "Digite um valor para a:"
 READ a
-PRINT "Digite um para b valor:"
+PRINT "Digite um valor para b:"
 READ b
 _t1 = a + b
 valor = _t1

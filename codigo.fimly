@@ -4,9 +4,9 @@ a: int;
 b: int;
 
 inicio
-    escreva("Digite um para a valor:");
+    escreva("Digite um valor para a:");
     leia(a);
-    escreva("Digite um para b valor:");
+    escreva("Digite um valor para b:");
     leia(b);
     valor = a + b;
     escreva(valor);

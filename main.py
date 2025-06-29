@@ -30,6 +30,7 @@ def main():
     mostrar_arquivo(codigo_fimly)
 
     # Scanner (Análise léxica)
+    print("\n=== ANALÍSE LÉXICA ===")
     tokens, tem_erro_lexico = scan_file(codigo_fimly)
     if tem_erro_lexico:
         print("Erros léxicos encontrados. Encerrando.")
@@ -37,6 +38,7 @@ def main():
 
     # Parser (Análise sintática)
     try:
+        print("\n=== ANALÍSE SINTATICA ===")
         input_stream = FileStream(codigo_fimly, encoding='utf-8')
     except FileNotFoundError:
         print(f"Arquivo {codigo_fimly} não encontrado. Encerrando.")
@@ -67,6 +69,7 @@ def main():
 
     # Gerar AST (imagem) se solicitado
     if args.gerar_ast:
+        print("\n=== IMAGEM GERADA (AST) ===")
         from src.gerar_imagem import gerar_arvore_e_imagem
         gerar_arvore_e_imagem(codigo_fimly, pasta_destino="imagens")
 
@@ -79,7 +82,7 @@ def main():
         return
 
     # Exibir TAC no terminal
-    print("\n=== Código Intermediário (TAC) ===")
+    print("\n=== CÓDIGO INTERMEDIÁRIO (TAC) ===")
     for instrucao in gerador.instructions:
         print(instrucao)
 
@@ -90,6 +93,7 @@ def main():
             with open(nome_saida, 'w', encoding='utf-8') as f:
                 for instrucao in gerador.instructions:
                     f.write(str(instrucao) + '\n')
+            print("\n=== ARQUIVO TAC ===")
             print(f"\nArquivo TAC gerado: {nome_saida}")
         except Exception as e:
             print(f"Erro ao salvar arquivo TAC: {e}")
@@ -103,6 +107,7 @@ def main():
         try:
             with open(nome_llvm, 'w', encoding='utf-8') as f:
                 f.write(codigo_llvm)
+            print("\n=== ARQUIVO DE LLVM IR ===")
             print(f"\nArquivo LLVM IR gerado: {nome_llvm}")
         except Exception as e:
             print(f"Erro ao salvar arquivo LLVM IR: {e}")
@@ -110,5 +115,3 @@ def main():
 if __name__ == "__main__":
     main()
 
-#Para executar o compilador, use o seguinte comando no terminal
- #python main.py seu_codigo.fimly --gerar-tac --gerar-llvm --gerar-ast
