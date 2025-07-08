@@ -1,0 +1,41 @@
+n: int;
+i: int;
+j: int;
+k: int;
+valor: int;
+s: int; 
+
+inicio 
+    escreva("Digite um numero inteiro: \n");
+    leia(n);
+
+    se (n < 1) {
+        escreva("Erro: numero deve ser maior ou igual a 1.");
+    } senao {
+        i = 0;
+        enquanto (i < n) faca {
+            
+            s = 0;
+            enquanto (s < n - i - 1) faca {
+                escreva(" "); 
+                s = s + 1;
+            }
+
+            j = 0;
+            enquanto (j <= i) faca {
+                valor = 1;
+                se (j > 0) {
+                    k = 0;
+                    enquanto (k < j) faca {
+                        valor = valor * (i - k) / (k + 1);
+                        k = k + 1;
+                    }
+                }
+                escreva(valor); 
+                j = j + 1;
+            }
+            escreva("\n");
+            i = i + 1;
+        }
+    }
+fim

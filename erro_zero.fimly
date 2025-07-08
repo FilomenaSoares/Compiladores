@@ -1,6 +1,0 @@
-a: int;
-
-inicio
-a = 10 / 0; 
-
-fim

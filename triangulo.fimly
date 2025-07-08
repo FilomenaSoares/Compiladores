@@ -1,0 +1,27 @@
+a: int;
+b: int;
+c: int; 
+
+inicio
+    escreva("Digite um valor decimal positivo para o lado a: \n");
+    leia(a);
+    escreva("Digite um valor decimal positivo para o lado b: \n");
+    leia(b);
+    escreva("Digite um valor decimal positivo para o lado c: \n");
+    leia(c);
+    
+        // Verifica se as medidas são válidas para um triângulo
+        se (a <= 0 || b <= 0 || c <= 0 || a + b <= c || a + c <= b || b + c <= a) {
+            escreva("Medidas invalidas");
+        } senao {
+            se (a == b && b == c) {
+                escreva("Triangulo equilatero valido");
+            } senao {
+                se (a == b || b == c || a == c) {
+                    escreva("Triangulo isosceles valido");
+                } senao {
+                    escreva("Triangulo escaleno valido");
+                }   
+            }
+        }
+fim
