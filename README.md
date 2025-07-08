@@ -70,6 +70,10 @@ graph LR;
     E --> F["Executável"];
 ```
 
+**Fluxo de Geração do Código Intermediário**
+
+
+
 **1. Codigo fonte**
 O ponto de partida é uma linha de código simples que declara uma variável e atribui a ela a soma de outras duas.
 
@@ -77,8 +81,13 @@ O ponto de partida é uma linha de código simples que declara uma variável e a
 valor = a + b ;
 ```
 
+**Fluxo de Geração do Código Intermediário**
+
+
 **2. Geração da Árvore Sintática Abstrata (AST)**
 O parser lê o código fonte e o transforma em uma AST. Para ```valor = a + b;```, a árvore representa a operação de atribuição como o nó principal.
+A partir da AST (árvore de sintaxe abstrata), que mostra a estrutura lógica do nosso código.
+
 
 ```mermaid
 graph TD;
@@ -95,6 +104,17 @@ Lista de Instruções TAC:
 t0 = a + b
 valor = t0
 ```
+**Gerenciamento de variáveis e entrada/saída**
+Variáveis: o código trata todas as variáveis como "operandos" (TACOperand), armazenando as variáveis.
+
+READ : É a instrução que aguarda a inserção de um dado feito pelo usuário e armazena 
+
+PRINT: é a instrução que pega o que está armazenado e mostre na tela
+
+**Comunicação entre os arquivos**
+Tac.py: este arquivo define o que é uma "instrução" (TACinstryction) e o que é um operando (TACOperand). Ele não se importa em como essas instruções são montadas, apenas como que elas são.
+
+Tac_generator.py : este arquivo é o manual que ensina a como montar as instruções (definidas em tac.py) para construir o modelo final (lista de instruções TAC).
 
 **4. Geração do Código LLVM IR (Backend)**
 Finalmente, o LLVMGenerator consome a lista de instruções TAC e a traduz para o código LLVM IR. O LLVM IR é uma representação de baixo nível, parecida com Assembly, mas independente da arquitetura da máquina.
