@@ -1,204 +1,154 @@
-# 📘 Compilador - Fimly
+# Compilador - Fimly
 
-Este repositório contém o desenvolvimento de um compilador para uma linguagem fictícia, baseada em elementos do **C** e do **Portugol**, com base em uma gramática criada por **Emmylly** e **Filomena Soares**, definida no arquivo `fimly.g4`.
+Este repositório contém o desenvolvimento de um compilador para a linguagem **Fimly**, uma linguagem didática com sintaxe inspirada em **C** e **Portugol**. O nome é uma fusão de suas criadoras, **Emmylly** e **Filomena Soares**.
 
-O compilador é implementado utilizando a ferramenta **ANTLR4** com a linguagem **Python**, e possui etapas completas de análise léxica, sintática, semântica, geração de código intermediário (TAC), geração de árvore sintática (AST) em imagem e geração de código LLVM IR.
-
----
-
-## 📑 Índice
-
-1. [🎯 Objetivo](#-objetivo)
-2. [🌐 Linguagem Fimly](#-linguagem-fimly)
-3. [🧠 Gramática Fimly](#-gramática-fimly)
-4. [🧾 Tokens da Linguagem Fimly](#-tokens-da-linguagem-fimly)
-   - [📌 Palavras-chave](#-palavras-chave)
-   - [🧩 Tipos de dados](#-tipos-de-dados)
-   - [➕ Operadores e Símbolos](#-operadores-e-símbolos)
-   - [🧱 Delimitadores](#-delimitadores)
-   - [🆔 Literais e Identificadores](#-literais-e-identificadores)
-   - [🧹 Espaços em branco e Comentários](#-espaços-em-branco-e-comentários)
-5. [✨ Funcionalidades](#-funcionalidades)
-6. [🛠 Tecnologias Utilizadas](#-tecnologias-utilizadas)
-7. [🚀 Como Executar](#-como-executar)
-8. [⚙️ Compilação do LLVM IR no Windows](#️-compilação-do-llvm-ir-no-windows)
-9. [💾 Saídas Esperadas](#-saídas-esperadas)
-10. [👩‍💻 Autoras](#-autoras)
+O projeto foi implementado em **Python** utilizando o **ANTLR4** para a análise léxica e sintática. O compilador realiza um fluxo completo, desde a leitura do código-fonte até a geração de código de baixo nível **LLVM IR**, que pode ser compilado para um executável nativo.
 
 ---
 
-## 🎯 Objetivo
+## Índice
 
-O objetivo principal do projeto é:
-
-- Processar um código-fonte `codigo.fimly`
-- Gerar tokens e reconhecer lexemas (análise léxica)
-- Relatar erros léxicos e sintáticos
-- Gerar uma **imagem da AST (árvore sintática)** em `.png`
-- Salvar a árvore também em `codigo.dot` para visualização com o Graphviz
-- Realizar análise semântica (validação de tipos e escopos)
-- Gerar **código intermediário** (Código de três endereços - TAC)
-- Gerar **código LLVM IR (codigo.ll)** compilável com `clang`
+1.  [Objetivo](#-objetivo)
+2.  [Arquitetura e Design do Compilador](#️-arquitetura-e-design-do-compilador)
+3.  [Fases do Compilador](#️-fases-do-compilador)
+4.  [Gerenciamento de Símbolos e Tipos](#-gerenciamento-de-símbolos-e-tipos)
+5.  [Gerenciamento de Entrada e Saída](#-gerenciamento-de-entrada-e-saída-io)
+6.  [Linguagem Fimly](#-linguagem-fimly)
+7.  [Tecnologias Utilizadas](#️-tecnologias-utilizadas)
+8.  [Como Executar](#-como-executar)
+9. [Exemplos de Uso](#-exemplos-de-uso)
+10. [Autoras](#-autoras)
 
 ---
 
-## 🌐 Linguagem Fimly
+## Objetivo
 
-A linguagem **Fimly** é uma linguagem didática, criada como exercício de projeto de compiladores. É uma fusão dos nomes **Filomena** e **Emmylly** e traz uma sintaxe intuitiva, parecida com Portugol.
+O objetivo principal deste projeto é demonstrar o conhecimento prático sobre a construção de um compilador, cobrindo todas as suas fases clássicas:
 
-Exemplo de código Fimly:
+-   **Análise Léxica:** Processar um arquivo `.fimly` e gerar uma sequência de tokens.
+-   **Análise Sintática:** Validar a estrutura do código com base em uma gramática formal e gerar uma Árvore Sintática Abstrata (AST).
+-   **Análise Semântica:** Validar declarações de variáveis e consistência de tipos.
+-   **Geração de Código Intermediário:** Traduzir a AST para um Código de Três Endereços (TAC) otimizado.
+-   **Geração de Código Alvo:** Traduzir o TAC para LLVM IR, um código de baixo nível, fortemente tipado e independente de plataforma.
+-   **Compilação Final:** Utilizar o `clang` para compilar o LLVM IR em um executável nativo.
+
+---
+
+## Arquitetura e Design do Compilador
+
+Este diagrama ilustra a arquitetura de múltiplos passos, mostrando como as representações intermediárias (AST e TAC) conectam as diferentes fases do compilador.
+
+```mermaid
+flowchart TD;
+    subgraph Frontend
+        A["Código Fonte (fimly)"] -->|Parser - ANTLR| B["Árvore Sintática (AST)"];
+    end
+
+    subgraph Middle-end
+        B -->|TACGenerator - Visitor| C["Lista de Instruções TAC"];
+        C -->|Otimizador| D["Lista de Instruções TAC Otimizada"];
+    end
+
+    subgraph Backend
+        D -->|LLVMGenerator| E["Código LLVM IR (texto)"];
+    end
+```
+
+---
+
+## Fases da Compilação
+
+Este é um fluxograma simplificado que demonstra o processo completo de compilação, desde o arquivo-fonte até o executável final
+
+
+```mermaid
+graph LR;
+    A["código.fimly"] --> B{"Análise Léxica/Sintática"};
+    B --> C["AST"];
+    C --> D["TAC"];
+    D --> E["LLVM IR"];
+    E --> F["Executável"];
+```
+
+**1. Codigo fonte**
+O ponto de partida é uma linha de código simples que declara uma variável e atribui a ela a soma de outras duas.
 
 ```fimly
-valor: int;
-a: int;
-b: int;
-
-inicio
-    escreva("Digite um valor para a:");
-    leia(a);
-    escreva("Digite um valor para b:");
-    leia(b);
-    valor = a + b;
-    escreva(valor);
-fim
+valor = a + b ;
 ```
+
+**2. Geração da Árvore Sintática Abstrata (AST)**
+O parser lê o código fonte e o transforma em uma AST. Para ```valor = a + b;```, a árvore representa a operação de atribuição como o nó principal.
+
+```mermaid
+graph TD;
+    Assign("=") --> Varvalor("valor");
+    Assign --> Plus("+");
+    Plus --> VarA("a");
+    Plus --> VarB("b");
+```
+**3. Geração do Código de Três Endereços (TAC)**
+O TACGenerator percorre a AST e a converte em uma lista de instruções lineares e simples. Cada instrução tem no máximo um operador. Para isso, são usadas variáveis temporárias (como t0, t1, etc.).
+
+Lista de Instruções TAC:
+```
+t0 = a + b
+valor = t0
+```
+
+**4. Geração do Código LLVM IR (Backend)**
+Finalmente, o LLVMGenerator consome a lista de instruções TAC e a traduz para o código LLVM IR. O LLVM IR é uma representação de baixo nível, parecida com Assembly, mas independente da arquitetura da máquina.
+
+Código LLVM IR Gerado:
+```
+; %a, %b, e %valor são ponteiros para as posições de memória dessas variáveis (ex: i32*).
+
+; 1. Carregar o valor da variável 'a' da memória para um registrador virtual.
+%val_a = load i32, i32* %a, align 4
+
+; 2. Carregar o valor da variável 'b' da memória para outro registrador virtual.
+%val_b = load i32, i32* %b, align 4
+
+; 3. Executar a instrução de soma (corresponde ao TAC 't0 = a + b').
+;    'nsw' significa "No Signed Wrap", uma flag de otimização para inteiros com sinal.
+%sum_temp = add nsw i32 %val_a, %val_b
+
+; 4. Armazenar o resultado da soma na posição de memória da variável 'valor'.
+;    (corresponde ao TAC 'valor = t0').
+store i32 %sum_temp, i32* %valor, align 4
+```
+
 ---
 
-## 🧠 Gramática Fimly
 
+## Gerenciamento de Símbolos e Tipos
+O gerenciamento de variáveis é realizado através de uma Tabela de Símbolos, implementada como um dicionário Python no LLVMGenerator. Ela funciona como o "caderno de anotações" do compilador.
+
+**Estrutura:** ```self.var_map```
+
+**Conteúdo:** Para cada variável, a tabela armazena seu ponteiro de memória e seu tipo.
 ```
-grammar fimly;
-
-// Tokens
-INICIO     : 'inicio';
-LEIA       : 'leia';
-ESCREVA    : 'escreva';
-FIM        : 'fim';
-SE         : 'se' ;
-ENTAO      : 'entao' ;
-SENAO      : 'senao' ;
-ENQUANTO   : 'enquanto' ;
-FACA       : 'faca' ;
-
-// Tipos de dados
-TIPO_INTEIRO   : 'int' ;                      
-TIPO_FLOAT     : 'float' ;
-TIPO_STRING    : 'string' ;
-
-// Símbolos
-ADICAO     : '+' ;
-SUBTRACAO  : '-' ;
-DIVISAO    : '/' ;
-MULTIPLICA : '*' ;
-IGUAL      : '==';
-DIFERENTE  : '!=';
-MAIORIGUAL : '>=';
-MENORIGUAL : '<=';
-MAIOR      : '>';
-MENOR      : '<';
-ATRIBUICAO : '=';
-NAO        : '!';
-E          : '&&';
-OU         : '||';
-ABRE_PAR   : '(' ;
-DOIS_PONTOS: ':' ;
-FECHA_PAR  : ')' ;
-ABRE_CHAVE : '{' ;
-FECHA_CHAVE: '}' ;
-PONTO_VIR  : ';' ;
-VIRG       : ',' ;
-
-// Literais e identificadores
-ID        : [a-zA-Z_] [a-zA-Z_0-9]*;         
-INTEIRO   : ('0'..'9')+;
-FLOAT     : ('0'..'9')+ '.' ('0'..'9')*;
-STRING    : '"' ~["\r\n]* '"' ;
-
-// Reconhece espaço em branco
-COMENTARIO : '//' ~[\r\n]* -> skip ;
-WS         : [ \t\n\r\f]+ -> skip ;
-
-
-// Regras de gramática
-fimly
-    : (comando_declaracao)* INICIO comandos* FIM
-    ;
-
-comando_declaracao
-    : ID DOIS_PONTOS tipo PONTO_VIR
-    ;
-
-tipo
-    : TIPO_INTEIRO
-    | TIPO_FLOAT
-    | TIPO_STRING
-    ;
-
-comandos
-    : comando_ler
-    | comando_escrever
-    | comando_condicional
-    | comando_repeticao
-    | comando_atribuicao
-    ;
-
-comando_ler
-    : LEIA ABRE_PAR ID FECHA_PAR PONTO_VIR
-    ;
-
-comando_escrever
-    : ESCREVA ABRE_PAR lista_expressao? FECHA_PAR PONTO_VIR
-    ;
-
-lista_expressao
-    : expressao (VIRG expressao)*
-    ;
-
-bloco_comandos: ABRE_CHAVE comandos* FECHA_CHAVE;
-
-comando_condicional
-    : SE ABRE_PAR expressao FECHA_PAR bloco_comandos (SENAO bloco_comandos)?
-    ;
-
-comando_repeticao
-    : ENQUANTO ABRE_PAR expressao FECHA_PAR FACA bloco_comandos
-    ;
-
-comando_atribuicao
-    : ID ATRIBUICAO expressao PONTO_VIR
-    ;
-
-expressao
-    : expressao_logica
-    ;
-
-expressao_logica
-    : expressao_comparacao ( (E | OU) expressao_comparacao )*
-    ;
-
-expressao_comparacao
-    : expressao_aritmetica ( (IGUAL | DIFERENTE | MAIOR | MAIORIGUAL | MENOR | MENORIGUAL) expressao_aritmetica )?
-    ;
-
-expressao_aritmetica
-    : termo ( (ADICAO | SUBTRACAO) termo )*
-    ;
-
-termo
-    : fator ( (MULTIPLICA | DIVISAO) fator )*
-    ;
-
-fator
-    : INTEIRO
-    | FLOAT
-    | STRING
-    | ID
-    | ABRE_PAR expressao FECHA_PAR
-    ;
+# Exemplo para a declaração 'a : float;'
+self.var_map['a'] = {'ptr': '%a', 'type': 'double'}
 ```
+**Funcionamento:**
 
-## 🎯 Tokens da Linguagem Fimly
+**Declaração:** O compilador gera a instrução alloca double para reservar espaço na memória e anota na tabela que %a é um ponteiro para um valor double.
 
+**Uso:** Ao encontrar a + b, o compilador consulta a tabela. Ao ver que a ou b é double, ele sabe que deve gerar a instrução de soma de ponto flutuante (fadd), e não a de inteiros (add).
+
+---
+
+## Gerenciamento de Entrada e Saída
+As funções leia e escreva da linguagem Fimly são implementadas fazendo uma ponte com a Biblioteca Padrão do C, que está disponível através do LLVM.
+
+**escreva(...):** É traduzida para uma chamada à função C @printf. O LLVMGenerator seleciona a string de formato correta (%d para int, %f para float) com base no tipo do dado a ser impresso, consultado na Tabela de Símbolos.
+
+**leia(...):** É traduzida para uma chamada à função C @scanf. É passado o formato esperado (%d ou %lf) e um ponteiro para a variável onde o valor lido será armazenado. O uso de %lf é crucial para a leitura correta de floats (que são double em LLVM).
+
+---
+
+## Linguagem Fimly
 A seguir, estão listados os tokens reconhecidos pela linguagem Fimly, divididos por categorias:
 
 ### 📌 Palavras-chave
@@ -272,29 +222,19 @@ A seguir, estão listados os tokens reconhecidos pela linguagem Fimly, divididos
 
 ---
 
-## ✨ Funcionalidades
+## Tecnologias Utilizadas
 
-- **Leitura de código-fonte:** O compilador processa arquivo codigo.fimly e gera tokens organizados.
-- **Log de erros:** Erros léxicos e sintáticos são exibidos em tempo real ou armazenados em log.
-- **Análise sintática:** Utiliza a gramática fimly.g4 para verificar a estrutura do programa.
-- **Geração de AST:** Salva a árvore sintática como .dot e .png.
-- **Análise semântica:** Valida declarações de variáveis e tipos.
-- **Geração de TAC:** Código intermediário otimizado e legível.
-- **Geração de LLVM IR:** Código de baixo nível compilável via clang.
-
----
-
-## 🛠 Tecnologias Utilizadas
-
-- [Python 3.x](https://www.python.org/downloads/)
-- [ANTLR4](https://www.antlr.org/)
-- Biblioteca `antlr4-python3-runtime`
-- [LLVM Clang](https://llvm.org/builds/)
-- [Visual Studio 2022 Build Tools (para libs e linker MSVC)](https://visualstudio.microsoft.com/pt-br/visual-cpp-build-tools/)
+- Python 3.11: Linguagem principal para a implementação do compilador.
+- Java: Necessário para o ANTLR
+- ANTLR4: Ferramenta para gerar o analisador léxico e sintático a partir da gramática formal fimly.g4.
+- Padrão Visitor: Utilizamos o padrão de projeto Visitor gerado pelo ANTLR para percorrer a AST e implementar a lógica do TACGenerator.
+- LLVM (Low Level Virtual Machine): Uma infraestrutura de compiladores completa. Utilizamos sua Representação Intermediária (LLVM IR) como nosso código-alvo.
+Vantagens: É fortemente tipado, possui um formato de assembly legível e nos dá acesso a um ecossistema de ferramentas fantástico como o interpretador lli e o compilador clang.
+- Graphviz: Ferramenta para renderizar os arquivos .dot da AST em imagens .png.
 
 ---
 
-## 🚀 Como Executar
+## Como Executar
 Com as ferramentas já instaladas:
 1. **Instale as dependências:**
    ```bash
@@ -305,28 +245,6 @@ Com as ferramentas já instaladas:
 3. Execute o compilador:
    ```bash
    python main.py codigo.fimly --gerar-tac --gerar-llvm --gerar-ast
-
----
-
-### ⚙️ Compilação do LLVM IR no Windows
-- Visual Studio 2022 Build Tools instalado (com C++ tools)
-- LLVM Clang instalado (ex: https://llvm.org/builds/)
-- Variáveis de ambiente do Visual Studio configuradas para x64 (executando vcvars64.bat)
-
-Passo a passo:
-1. Abra o Prompt de Comando do Windows
-   - Pressione a tecla ```Windows + R```, digite ```cmd``` e pressione Enter.
-   
-2. Configure o ambiente Visual Studio x64
-   - Execute o script que configura as variáveis de ambiente para compilação 64 bits:
-   ```bash
-   call "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvars64.bat"
-
-3. Vá até a pasta onde está salvo seu projeto
-- Meu Exemplo:
-   ```bash
-   cd C:\Users\memmy\OneDrive\Documentos\GitHub\Compiladores
-
 4. Compile o código LLVM IR para executável
    - No prompt (mesmo ambiente onde rodou o passo anterior), execute:
    ```bash
@@ -341,139 +259,90 @@ Passo a passo:
 
 ---
 
-## 💾 Saídas Esperadas
-Ao executar o compilador com o comando acima, espere as seguintes saídas no terminal:
+## Exemplos de Uso
+Classificação de Triângulos
 
-### Conteúdo do arquivo
-```bash
-=== Conteúdo do arquivo ===
+**Código-Fonte (```triangulo.fimly```):**
 
-valor: int;
-a: int;
-b: int;
+```
+a: float;
+b: float;
+c: float;
 
 inicio
-    escreva("Digite um valor para a:");
+    escreva("Digite um valor para o lado a:");
     leia(a);
-    escreva("Digite um valor para b:");
+    escreva("Digite um valor para o lado b:");
     leia(b);
-    valor = a + b;
-    escreva(valor);
+    escreva("Digite um valor para o lado c:");
+    leia(c);
+
+    se (a <= 0.0 || b <= 0.0 || c <= 0.0 || a + b <= c || a + c <= b || b + c <= a) {
+        escreva("Medidas invalidas\n");
+    } senao {
+        se (a == b && b == c) {
+            escreva("Triangulo equilatero valido\n");
+        } senao {
+            se (a == b || b == c || a == c) {
+                escreva("Triangulo isosceles valido\n");
+            } senao {
+                escreva("Triangulo escaleno valido\n");
+            }
+        }
+    }
+fim
+```
+**Saída da Execução:**
+```
+Digite um valor para o lado a:1
+Digite um valor para o lado b:1
+Digite um valor para o lado c:3
+Medidas invalidas
+```
+
+Triângulo de Pascal
+
+**Código-Fonte (pascal.fimly):**
+```n: int;
+i: int;
+j: int;
+valor: int;
+s: int;
+
+inicio
+    escreva("Digite o numero de linhas: ");
+    leia(n);
+    i = 0;
+    enquanto (i < n) faca {
+        s = 0;
+        enquanto (s < n - i - 1) faca {
+            escreva(" ");
+            s = s + 1;
+        }
+        valor = 1;
+        j = 0;
+        enquanto (j <= i) faca {
+            escreva(valor, " ");
+            valor = valor * (i - j) / (j + 1);
+            j = j + 1;
+        }
+        escreva("\n");
+        i = i + 1;
+    }
 fim
 ```
 
-### Tokens Reconhecidos (Análise Léxica)
-```bash
-=== ANALÍSE LÉXICA ===
-TOKENS RECONHECIDOS:
-<ID, 'valor', Linha 2, Coluna 0>
-<DOIS_PONTOS, ':', Linha 2, Coluna 5>
-<TIPO_INTEIRO, 'int', Linha 2, Coluna 7>
-<PONTO_VIR, ';', Linha 2, Coluna 10>
-<ID, 'a', Linha 3, Coluna 0>
-<DOIS_PONTOS, ':', Linha 3, Coluna 1>
-<TIPO_INTEIRO, 'int', Linha 3, Coluna 3>
-<PONTO_VIR, ';', Linha 3, Coluna 6>
-<ID, 'b', Linha 4, Coluna 0>
-<DOIS_PONTOS, ':', Linha 4, Coluna 1>
-<TIPO_INTEIRO, 'int', Linha 4, Coluna 3>
-<PONTO_VIR, ';', Linha 4, Coluna 6>
-<INICIO, 'inicio', Linha 6, Coluna 0>
-<ESCREVA, 'escreva', Linha 7, Coluna 4>
-<ABRE_PAR, '(', Linha 7, Coluna 11>
-<STRING, '"Digite um valor para a:"', Linha 7, Coluna 12>
-<FECHA_PAR, ')', Linha 7, Coluna 37>
-<PONTO_VIR, ';', Linha 7, Coluna 38>
-<LEIA, 'leia', Linha 8, Coluna 4>
-<ABRE_PAR, '(', Linha 8, Coluna 8>
-<ID, 'a', Linha 8, Coluna 9>
-<FECHA_PAR, ')', Linha 8, Coluna 10>
-<PONTO_VIR, ';', Linha 8, Coluna 11>
-<ESCREVA, 'escreva', Linha 9, Coluna 4>
-<ABRE_PAR, '(', Linha 9, Coluna 11>
-<STRING, '"Digite um valor para b:"', Linha 9, Coluna 12>
-<FECHA_PAR, ')', Linha 9, Coluna 37>
-<PONTO_VIR, ';', Linha 9, Coluna 38>
-<LEIA, 'leia', Linha 10, Coluna 4>
-<ABRE_PAR, '(', Linha 10, Coluna 8>
-<ID, 'b', Linha 10, Coluna 9>
-<FECHA_PAR, ')', Linha 10, Coluna 10>
-<PONTO_VIR, ';', Linha 10, Coluna 11>
-<ID, 'valor', Linha 11, Coluna 4>
-<ATRIBUICAO, '=', Linha 11, Coluna 10>
-<ID, 'a', Linha 11, Coluna 12>
-<ADICAO, '+', Linha 11, Coluna 14>
-<ID, 'b', Linha 11, Coluna 16>
-<PONTO_VIR, ';', Linha 11, Coluna 17>
-<ESCREVA, 'escreva', Linha 12, Coluna 4>
-<ABRE_PAR, '(', Linha 12, Coluna 11>
-<ID, 'valor', Linha 12, Coluna 12>
-<FECHA_PAR, ')', Linha 12, Coluna 17>
-<PONTO_VIR, ';', Linha 12, Coluna 18>
-<FIM, 'fim', Linha 13, Coluna 0>
+**Saída da Execução (para n=5):**
+
+```
+Digite o numero de linhas: 5
+    1 
+   1 1 
+  1 2 1 
+ 1 3 3 1 
+1 4 6 4 1
 ```
 
-### Análise Sintática
-```bash
-=== ANALÍSE SINTATICA ===
-[Log Semântico]: Variável 'valor' declarada como 'int'
-[Log Semântico]: Variável 'a' declarada como 'int'
-[Log Semântico]: Variável 'b' declarada como 'int'
-```
-
-### Imagem da AST
-   - Será criada a imagem ```imagens/codigo.png``` e o arquivo  ```imagens/codigo.dot``` para visualização gráfica da árvore sintática.
-```bash
-=== IMAGEM GERADA (AST) ===
-Arquivo imagens\codigo.dot criado.
-Imagem imagens\codigo.png gerada.
-```
-
-### Código Intermediário (TAC)
-```bash
-=== CÓDIGO INTERMEDIÁRIO (TAC) ===
-DECL valor, int
-DECL a, int
-DECL b, int
-PRINT "Digite um valor para a:"
-READ a
-PRINT "Digite um valor para b:"
-READ b
-_t1 = a + b
-valor = _t1
-PRINT valor
-```
-
-### Arquivos Gerados
-codigo.tac — arquivo contendo o código intermediário TAC.
-```bash
-=== ARQUIVO TAC ===
-
-Arquivo TAC gerado: codigo.tac
-```
-
-codigo.ll — arquivo contendo o código LLVM IR compilável.
-```bash
-=== ARQUIVO DE LLVM IR ===
-
-Arquivo LLVM IR gerado: codigo.ll
-```
-### Saída do Programa no Prompt
-
-Ao executar o programa gerado (`programa.exe`), o usuário verá a seguinte interação no prompt de comando:
-
-```bash
-Digite um valor para a:
-5
-Digite um valor para b:
-7
-12
-```
-
----
-
-## 👩‍💻 Autoras
+## Autoras
 - [Emmylly](https://github.com/EmmyllyDev)
 - [Filomena Soares](https://github.com/FilomenaSoares)
-
-
