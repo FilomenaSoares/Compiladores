@@ -3,11 +3,11 @@ b: int;
 c: int; 
 
 inicio
-    escreva("Digite um valor decimal positivo para o lado a: \n");
+    escreva("Digite um valor para o lado a: \n");
     leia(a);
-    escreva("Digite um valor decimal positivo para o lado b: \n");
+    escreva("Digite um valor para o lado b: \n");
     leia(b);
-    escreva("Digite um valor decimal positivo para o lado c: \n");
+    escreva("Digite um valor para o lado c: \n");
     leia(c);
     
         // Verifica se as medidas são válidas para um triângulo
