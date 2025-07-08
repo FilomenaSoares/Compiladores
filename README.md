@@ -146,6 +146,14 @@ As funções leia e escreva da linguagem Fimly são implementadas fazendo uma po
 
 **leia(...):** É traduzida para uma chamada à função C @scanf. É passado o formato esperado (%d ou %lf) e um ponteiro para a variável onde o valor lido será armazenado. O uso de %lf é crucial para a leitura correta de floats (que são double em LLVM).
 
+| Funcionalidade     | Onde acontece    |  Comando Usado   |
+|--------------------|------------------|------------------|
+| Criar Variavel     | DECLR, ASSIGN, load_var | alloca    |
+| Escrever valor na variavel  | ASSIGN  | store            |
+| Ler valor da variavel | load_vr       | load             |
+| Entrada de dados   | READ             | scanf + @scanf_fmt |
+| Saida de dados     | PRINT            | print + @print_fmt|
+
 ---
 
 ## Linguagem Fimly
