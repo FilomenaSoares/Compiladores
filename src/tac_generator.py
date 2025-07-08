@@ -11,16 +11,35 @@ class TACGenerator(fimlyVisitor, GeradorDeCodigoIntermediario):
         super().__init__()
         GeradorDeCodigoIntermediario.__init__(self)
 
-    # O método 'visitExpressao' é o ponto de entrada para qualquer expressão.
-    # Garante que sempre retornamos o resultado.
     def visitExpressao(self, ctx:fimlyParser.ExpressaoContext):
         return self.visit(ctx.expressao_logica())
 
+    # O método 'visitExpressao' é o ponto de entrada para qualquer expressão.
+    # Garante que sempre retornamos o resultado.
     def visitExpressao_logica(self, ctx: fimlyParser.Expressao_logicaContext):
-        # A lógica para 'e' (&&) e 'ou' (||) seria implementada aqui.
-        # Por enquanto, apenas passamos para a expressão de comparação.
-        return self.visit(ctx.expressao_comparacao(0))
-
+        left = self.visit(ctx.expressao_comparacao(0))
+        
+        # Se houver operadores lógicos (&&, ||)...
+        if len(ctx.expressao_comparacao()) > 1:
+            for i in range(1, len(ctx.expressao_comparacao())):
+                # Obtenha o operador ('&&' ou '||')
+                op = ctx.getChild(2 * i - 1).getText()
+                
+                # Obtenha o resultado da expressão da direita
+                right = self.visit(ctx.expressao_comparacao(i))
+                
+                # Crie uma nova variável temporária para armazenar o resultado
+                temp = self.new_temp()
+                
+                # Adicione a instrução TAC simples (ex: _t1 = left && right)
+                self.instructions.append(TACInstruction(op, temp, left, right))
+                
+                # O resultado desta operação se torna o operando 'left' para a próxima iteração
+                # Isso permite encadear operações como: a && b || c
+                left = temp
+                
+        return left   
+                
     def visitExpressao_comparacao(self, ctx:fimlyParser.Expressao_comparacaoContext):
         left = self.visit(ctx.expressao_aritmetica(0))
         if len(ctx.expressao_aritmetica()) > 1:
@@ -52,22 +71,20 @@ class TACGenerator(fimlyVisitor, GeradorDeCodigoIntermediario):
         return left
 
     def visitFator(self, ctx: fimlyParser.FatorContext):
-        if ctx.ID():
+        if ctx.ID(): # Se for um Identificador
             return TACOperand(ctx.ID().getText())
-        if ctx.INTEIRO():
+        if ctx.INTEIRO():  # Se for um número Inteiro literal
             return TACOperand(ctx.INTEIRO().getText())
         
-        # --- ALTERAÇÃO PRINCIPAL AQUI ---
-        if ctx.FLOAT():
+        if ctx.FLOAT(): # Se for um número Float literal
             return TACOperand(ctx.FLOAT().getText())
-        # --------------------------------
 
-        if ctx.STRING():
+        if ctx.STRING():  #Se for uma String literal
             return TACOperand(ctx.STRING().getText())
-        if ctx.expressao():
+        if ctx.expressao(): # Se for uma expressão entre parênteses
             return self.visit(ctx.expressao())
             
-        # Mensagem de erro melhorada para facilitar depuração futura
+        # Se não for nenhum dos acima, lança um erro
         raise CodeGenError(f"Fator não reconhecido na geração de TAC: '{ctx.getText()}'")
 
     def visitComando_atribuicao(self, ctx: fimlyParser.Comando_atribuicaoContext):

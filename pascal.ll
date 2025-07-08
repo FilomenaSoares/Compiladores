@@ -1,13 +1,15 @@
-; LLVM IR gerado pelo compilador Fimly
+; LLVM IR Gerado pelo Compilador Fimly
 declare i32 @printf(i8*, ...)
 declare i32 @scanf(i8*, ...)
-@print_fmt = constant [4 x i8] c"%d \00"
-@scan_fmt = constant [3 x i8] c"%d\00"
+@print_int_fmt = private unnamed_addr constant [3 x i8] c"%d\00"
+@print_float_fmt = private unnamed_addr constant [3 x i8] c"%f\00"
+@scan_int_fmt = private unnamed_addr constant [3 x i8] c"%d\00"
+@scan_float_fmt = private unnamed_addr constant [4 x i8] c"%lf\00"
 
-@msg0 = constant [28 x i8] c"Digite um numero inteiro: \0A\00"
-@msg1 = constant [42 x i8] c"Erro: numero deve ser maior ou igual a 1.\00"
-@msg2 = constant [2 x i8] c" \00"
-@msg3 = constant [2 x i8] c"\0A\00"
+@msg0 = private unnamed_addr constant [26 x i8] c"Digite um numero inteiro:\00"
+@msg1 = private unnamed_addr constant [42 x i8] c"Erro: numero deve ser maior ou igual a 1.\00"
+@msg2 = private unnamed_addr constant [2 x i8] c" \00"
+@msg3 = private unnamed_addr constant [2 x i8] c"\0A\00"
 
 define i32 @main() {
 entry:
@@ -17,8 +19,8 @@ entry:
   %k = alloca i32
   %valor = alloca i32
   %s = alloca i32
-  call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([28 x i8], [28 x i8]* @msg0, i64 0, i64 0))
-  call i32 (i8*, ...) @scanf(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @scan_fmt, i64 0, i64 0), i32* %n)
+  call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([26 x i8], [26 x i8]* @msg0, i32 0, i32 0))
+  call i32 (i8*, ...) @scanf(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @scan_int_fmt, i32 0, i32 0), i32* %n)
   %r1 = load i32, i32* %n
   %r2 = icmp slt i32 %r1, 1
   %r3 = zext i1 %r2 to i32
@@ -26,9 +28,9 @@ entry:
   store i32 %r3, i32* %_t1
   %r4 = load i32, i32* %_t1
   %r5 = icmp eq i32 %r4, 0
-  br i1 %r5, label %L1, label %label1
-label1:
-  call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([42 x i8], [42 x i8]* @msg1, i64 0, i64 0))
+  br i1 %r5, label %L1, label %L_auto_1
+L_auto_1:
+  call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([42 x i8], [42 x i8]* @msg1, i32 0, i32 0))
   br label %L2
 L1:
   store i32 0, i32* %i
@@ -42,8 +44,8 @@ L3:
   store i32 %r9, i32* %_t2
   %r10 = load i32, i32* %_t2
   %r11 = icmp eq i32 %r10, 0
-  br i1 %r11, label %L4, label %label2
-label2:
+  br i1 %r11, label %L4, label %L_auto_2
+L_auto_2:
   store i32 0, i32* %s
   br label %L5
 L5:
@@ -64,9 +66,9 @@ L5:
   store i32 %r20, i32* %_t5
   %r21 = load i32, i32* %_t5
   %r22 = icmp eq i32 %r21, 0
-  br i1 %r22, label %L6, label %label3
-label3:
-  call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([2 x i8], [2 x i8]* @msg2, i64 0, i64 0))
+  br i1 %r22, label %L6, label %L_auto_3
+L_auto_3:
+  call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([2 x i8], [2 x i8]* @msg2, i32 0, i32 0))
   %r23 = load i32, i32* %s
   %r24 = add i32 %r23, 1
   %_t6 = alloca i32
@@ -86,8 +88,8 @@ L7:
   store i32 %r29, i32* %_t7
   %r30 = load i32, i32* %_t7
   %r31 = icmp eq i32 %r30, 0
-  br i1 %r31, label %L8, label %label4
-label4:
+  br i1 %r31, label %L8, label %L_auto_4
+L_auto_4:
   store i32 1, i32* %valor
   %r32 = load i32, i32* %j
   %r33 = icmp sgt i32 %r32, 0
@@ -96,8 +98,8 @@ label4:
   store i32 %r34, i32* %_t8
   %r35 = load i32, i32* %_t8
   %r36 = icmp eq i32 %r35, 0
-  br i1 %r36, label %L9, label %label5
-label5:
+  br i1 %r36, label %L9, label %L_auto_5
+L_auto_5:
   store i32 0, i32* %k
   br label %L10
 L10:
@@ -109,8 +111,8 @@ L10:
   store i32 %r40, i32* %_t9
   %r41 = load i32, i32* %_t9
   %r42 = icmp eq i32 %r41, 0
-  br i1 %r42, label %L11, label %label6
-label6:
+  br i1 %r42, label %L11, label %L_auto_6
+L_auto_6:
   %r43 = load i32, i32* %i
   %r44 = load i32, i32* %k
   %r45 = sub i32 %r43, %r44
@@ -143,7 +145,8 @@ L11:
   br label %L9
 L9:
   %r58 = load i32, i32* %valor
-  call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @print_fmt, i64 0, i64 0), i32 %r58)
+  call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @print_int_fmt, i32 0, i32 0), i32 %r58)
+  call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([2 x i8], [2 x i8]* @msg2, i32 0, i32 0))
   %r59 = load i32, i32* %j
   %r60 = add i32 %r59, 1
   %_t15 = alloca i32
@@ -152,7 +155,7 @@ L9:
   store i32 %r61, i32* %j
   br label %L7
 L8:
-  call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([2 x i8], [2 x i8]* @msg3, i64 0, i64 0))
+  call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([2 x i8], [2 x i8]* @msg3, i32 0, i32 0))
   %r62 = load i32, i32* %i
   %r63 = add i32 %r62, 1
   %_t16 = alloca i32
@@ -163,7 +166,5 @@ L8:
 L4:
   br label %L2
 L2:
-  br label %fim
-fim:
   ret i32 0
 }

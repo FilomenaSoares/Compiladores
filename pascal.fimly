@@ -6,7 +6,7 @@ valor: int;
 s: int; 
 
 inicio 
-    escreva("Digite um numero inteiro: \n");
+    escreva("Digite um numero inteiro:");
     leia(n);
 
     se (n < 1) {
@@ -31,7 +31,7 @@ inicio
                         k = k + 1;
                     }
                 }
-                escreva(valor); 
+                escreva(valor, " "); 
                 j = j + 1;
             }
             escreva("\n");

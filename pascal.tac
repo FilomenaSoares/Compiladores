@@ -4,7 +4,7 @@ DECL j, int
 DECL k, int
 DECL valor, int
 DECL s, int
-PRINT "Digite um numero inteiro: \n"
+PRINT "Digite um numero inteiro:"
 READ n
 _t1 = n < 1
 IF_FALSE _t1 GOTO L1
@@ -48,6 +48,7 @@ GOTO L10
 L11:
 L9:
 PRINT valor
+PRINT " "
 _t15 = j + 1
 j = _t15
 GOTO L7
